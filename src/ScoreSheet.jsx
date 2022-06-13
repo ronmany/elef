@@ -1,9 +1,24 @@
 import React from 'react'
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import { Table, TableBody, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import { styled } from '@mui/material/styles';
 
+
+const StyledTableCell = styled(TableCell)(() => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: 'rgb(30, 25, 40)',
+    color: 'white',
+  },
+  [`&.${tableCellClasses.body}`]: {
+    backgroundColor: 'rgb(40, 37, 53)',
+    color: 'white'
+  },
+}));
 
 function ScoreSheet({ firestore, userId="user-Id" }) {
 
+  const [players, setPlayers] = React.useState([])
   const [scores, setScores] = React.useState([])
 
   async function getActiveGame(userId) {
@@ -16,6 +31,7 @@ function ScoreSheet({ firestore, userId="user-Id" }) {
 
   function playersToScores(players) {
     const scores = []
+    // const totals = []
     if (players.length == 0) return []
     const rows = players[0].Scores.length
     for (let i = 0; i < rows; i++) {
@@ -35,10 +51,11 @@ function ScoreSheet({ firestore, userId="user-Id" }) {
       if (game) {
         const playersRef = collection(firestore, `users/${userId}/Games/${game}/Players`)
         const data = await getDocs(playersRef)
-        const players = data.docs.map((doc) => ({ ...doc.data() }))
-        players.sort((a, b) => a.Order - b.Order)
-        //console.log(data.docs.map((doc) => ({...doc.data() })))
-        setScores(playersToScores(players))
+        const playersDoc = data.docs.map((doc) => ({ ...doc.data() }))
+        playersDoc.sort((a, b) => a.Order - b.Order)
+        setPlayers(playersDoc.map(p => p.Name))
+        console.log(players)
+        setScores(playersToScores(playersDoc))
       }
     }
     readActiveGame();
@@ -46,17 +63,36 @@ function ScoreSheet({ firestore, userId="user-Id" }) {
 
 
   return (
-    <div>
-      {(scores.length > 0) ? (
-        scores.map((row, index) => {
-          return (
-            <li key={index}>{index + 1}: {row.join(", ")}</li>
-          )
-        })
-      )
-        : (<h2>No Active Games</h2>)
-      }
-    </div>
+
+     <TableContainer component={Paper}>
+      <Table sx={{ minWidth: "100wh" }} aria-label="Score table" stickyHeader={true} >
+        <TableHead>
+          <TableRow >
+            <StyledTableCell sx={{maxWidth: 15 }}>Match</StyledTableCell>
+            {players.map((p) => {
+              return <StyledTableCell key={p} align="right">{p}</StyledTableCell>
+            })}
+          </TableRow>
+        </TableHead>
+        <TableBody sx={{ color: 'white' }}>
+          {scores.map((row, index) => (
+            <TableRow
+              key={index}
+              sx={{
+                '&:nth-of-type(odd)': { backgroundColor: 'rgb(60, 57, 70)' },
+                '&:last-child td, &:last-child th': { border: 0 },
+              }}
+            >
+              <StyledTableCell component="th" scope="row" sx={{maxWidth: 15 }}>{index+1}</StyledTableCell>
+              {row.map((c, i) => {
+                return <StyledTableCell key={i} align="right">{c}</StyledTableCell>
+                })
+              }
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   )
 }
 

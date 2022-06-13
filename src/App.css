@@ -28,13 +28,17 @@ body {
 .App section {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  min-height: 100vh;
+  min-height: 90vh;
   background-color: rgb(40, 37, 53);
   color: white;
+  margin-top: 10vh;
 }
 
+.MuiTableCell-root{
+  color: white important!;
+}
 main {
   padding: 10px;
   height: 80vh;
