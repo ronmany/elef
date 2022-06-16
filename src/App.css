@@ -30,7 +30,7 @@ body {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  min-height: 90vh;
+  height: calc(90vh - 62px);
   background-color: rgb(40, 37, 53);
   color: white;
   margin-top: 10vh;

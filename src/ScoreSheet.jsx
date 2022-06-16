@@ -1,24 +1,32 @@
 import React from 'react'
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { Table, TableBody, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Table, TableBody, TableContainer, TableHead, TableRow, Paper, TableFooter } from '@mui/material';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import { styled } from '@mui/material/styles';
-
 
 const StyledTableCell = styled(TableCell)(() => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: 'rgb(30, 25, 40)',
-    color: 'white',
+    borderRight: 0,
+    color: 'lightblue',
   },
   [`&.${tableCellClasses.body}`]: {
     backgroundColor: 'rgb(40, 37, 53)',
-    color: 'white'
+    color: 'white',
+  },
+  [`&.${tableCellClasses.footer}`]: {
+    backgroundColor: 'rgb(30, 25, 40)',
+    color: 'yellow',
+    fontWeight: '400'
   },
 }));
+
+
 
 function ScoreSheet({ firestore, userId="user-Id" }) {
 
   const [players, setPlayers] = React.useState([])
+  const [totals, setTotals] = React.useState([])
   const [scores, setScores] = React.useState([])
 
   async function getActiveGame(userId) {
@@ -27,6 +35,12 @@ function ScoreSheet({ firestore, userId="user-Id" }) {
     const data = await getDocs(q);
     if (data.empty) return ""
     return data.docs[0].id
+  }
+
+  function playerToTotals(players) {
+    const totals = []
+    players.forEach((player) =>  totals.push(player.Scores.reduce((sum, a) => sum + a, 0)))
+    return totals
   }
 
   function playersToScores(players) {
@@ -44,6 +58,8 @@ function ScoreSheet({ firestore, userId="user-Id" }) {
     return scores
   }
 
+  const tableWidth = React.useMemo(() => players > 3 ? '200vw' : '100vw', [players])
+
 
   React.useEffect(() => {
     const readActiveGame = async () => {
@@ -56,6 +72,7 @@ function ScoreSheet({ firestore, userId="user-Id" }) {
         setPlayers(playersDoc.map(p => p.Name))
         console.log(players)
         setScores(playersToScores(playersDoc))
+        setTotals(playerToTotals(playersDoc))
       }
     }
     readActiveGame();
@@ -65,12 +82,12 @@ function ScoreSheet({ firestore, userId="user-Id" }) {
   return (
 
      <TableContainer component={Paper}>
-      <Table sx={{ minWidth: "100wh" }} aria-label="Score table" stickyHeader={true} >
+      <Table sx={{ minWidth: {tableWidth}, height: '100%'}} aria-label="Score table" stickyHeader >
         <TableHead>
           <TableRow >
-            <StyledTableCell sx={{maxWidth: 15 }}>Match</StyledTableCell>
+            <StyledTableCell width="50px" sx={{ padding: '0 0 0 20px' }}>#</StyledTableCell>
             {players.map((p) => {
-              return <StyledTableCell key={p} align="right">{p}</StyledTableCell>
+              return <StyledTableCell key={p} sx={{whiteSpace: 'nowrap'}} align="right">{p}</StyledTableCell>
             })}
           </TableRow>
         </TableHead>
@@ -78,12 +95,12 @@ function ScoreSheet({ firestore, userId="user-Id" }) {
           {scores.map((row, index) => (
             <TableRow
               key={index}
-              sx={{
-                '&:nth-of-type(odd)': { backgroundColor: 'rgb(60, 57, 70)' },
-                '&:last-child td, &:last-child th': { border: 0 },
-              }}
+              // sx={{
+              //   // '&:nth-of-type(odd)': { backgroundColor: 'rgb(60, 57, 70)' },
+              //   '&:last-child td, &:last-child th': { border: 0 },
+              // }}
             >
-              <StyledTableCell component="th" scope="row" sx={{maxWidth: 15 }}>{index+1}</StyledTableCell>
+              <StyledTableCell component="th" scope="row">{index+1}</StyledTableCell>
               {row.map((c, i) => {
                 return <StyledTableCell key={i} align="right">{c}</StyledTableCell>
                 })
@@ -91,6 +108,15 @@ function ScoreSheet({ firestore, userId="user-Id" }) {
             </TableRow>
           ))}
         </TableBody>
+        <TableFooter>
+          <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+              <StyledTableCell component="th" sx={{backgroundColor: 'blue', color: 'yellow', fontWeight: 'bold'}} scope="row">Total</StyledTableCell>
+              {totals.map((c, i) => {
+                return <StyledTableCell key={i} align="right">{c}</StyledTableCell>
+                })
+              }
+          </TableRow>
+        </TableFooter>
       </Table>
     </TableContainer>
   )

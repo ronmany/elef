@@ -1,15 +1,22 @@
 import React from 'react';
 import './App.css';
 import logo from './cards.png';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { Button, IconButton } from '@mui/material';
-import { Logout, Google } from '@mui/icons-material';
+import { Button } from '@mui/material';
+import { Google } from '@mui/icons-material';
 import ScoreSheet from './ScoreSheet'
+import Menu from './Menu';
 // import { useCollectionData } from 'react-firebase-hooks/firestore';
 
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
 
 
 const db = initializeApp({
@@ -29,16 +36,21 @@ function App() {
   const [user] = useAuthState(auth);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <h1>&#34;1000&#34; Score sheet</h1>
-        <SignOut />
-      </header>
-      <section>
-        {user ? <ScoreSheet userId="user-Id" firestore={firestore} /> : <SignIn />}
-      </section>
-    </div>
+    <ThemeProvider theme={darkTheme}>
+      <div className="App">
+        <header className="App-header">
+          <img src={logo} className="App-logo" alt="logo" />
+          <h1>&#34;1000&#34; Scoresheet</h1>
+        </header>
+        <section>
+          {user ? <>
+            <ScoreSheet userId="user-Id" firestore={firestore} />
+            <Menu auth={auth} />
+            </>
+              : <SignIn />}
+        </section>
+      </div>
+    </ThemeProvider>
   );
 }
 
@@ -57,12 +69,6 @@ function SignIn() {
     </Button>
   )
 
-}
-
-function SignOut() {
-  return auth.currentUser && (
-    <IconButton onClick={() => auth.signOut()} style={{color: "snow"}}> <Logout /> </IconButton>
-  )
 }
 
 
