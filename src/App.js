@@ -24,7 +24,6 @@ const auth = getAuth();
 function App() {
 
   const [user] = useAuthState(auth);
-  console.log(auth, user)
   return (
     <ThemeProvider theme={darkTheme}>
       <GameProvider>
@@ -36,7 +35,7 @@ function App() {
             <section>
               {user ? <>
                 <ScoreSheet user={user} />
-                <Menu auth={auth} signout={SignOut} />
+                <Menu user={user} signout={SignOut} />
                 </>
                   : <SignIn />}
             </section>
@@ -59,8 +58,7 @@ function SignIn() {
   }
 
   return (
-    <Button variant='contained' startIcon={<Google />} onClick={signInWithGoogle}
-      className="sign-in" >
+    <Button variant='contained' startIcon={<Google />} sx={{marginTop: '64px'}} onClick={signInWithGoogle} >
       Sign in with Google
     </Button>
   )

@@ -1,16 +1,21 @@
 import { Logout } from '@mui/icons-material';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Stack } from '@mui/material';
 import React from 'react'
+import AddScore from './AddScore';
 import NewGame from './NewGame';
 
 function Menu({ user, signout }) {
    return (
       <>
       { user ? (
-         <Box sx={{ width: '100%', position: 'fixed', bottom: 0 }} >
-               {/* <Button startIcon={<PlayArrow />} size='large' sx={{margin: '4px 6% 16px 6%', color: '#3085d6'}}>New Game</Button> */}
-            <NewGame auth={user} />
-            <Button startIcon={<Logout />} size='large' sx={{margin: '4px 6% 16px 6%', color: '#3085d6'}} onClick={signout}>Logout</Button>
+            <Box sx={{ position: 'fixed', bottom: 0 }} >
+               <Stack direction="row" spacing={{ xs: 3, sm: 4, md: 8 }} sx={{marginBottom: '12px'}}>
+                  <NewGame user={user} />
+                  <AddScore user={user} />
+                  <Button startIcon={<Logout />} size='medium' onClick={signout}>Logout</Button>
+
+               </Stack>
+
          </Box >
          ): null
          }

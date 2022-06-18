@@ -14,12 +14,12 @@ body {
   min-height: 50px;
   color: white;
   position: fixed;
-  width: 100%;
+  width: 100vw;
   max-width: 728px;
   top: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-around;
   z-index: 99;
   padding: 10px;
   box-sizing: border-box;
@@ -111,7 +111,7 @@ button:disabled {
   color: #282c34;
   background: snow;
   max-width: 300px;
-  /* margin: 0 auto; */
+  margin-top: 30%;
 }
 
 .sign-out {
@@ -182,5 +182,46 @@ p {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+/**
+ * ----------------------------------------
+ * animation scale-up-center
+ * ----------------------------------------
+ */
+.scale-up-center {
+  -webkit-animation: scale-up-center 0.9s ease-in 0.5s infinite alternate both;
+  animation: scale-up-center 0.9s ease-in 0.5s infinite alternate both;
+  position: fixed;
+  left: 42%;
+  top: 45%;
+  transform: translate(-50%, -50%);
+  color: orange;
+}
+.scale-up-center.MuiTypography-h2 {
+  font-weight: 500;
+}
+
+@-webkit-keyframes scale-up-center {
+  0% {
+    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
+  }
+
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+@keyframes scale-up-center {
+  0% {
+    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
+  }
+
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
   }
 }

@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { Button, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, IconButton, InputAdornment, TextField, Tooltip } from '@mui/material'
-import { PlayArrow, AddCircle, Cancel, ClearAll } from '@mui/icons-material';
-import { collection, query, where, addDoc, Timestamp, getDocs, updateDoc } from 'firebase/firestore'
+import { PlayArrow, AddCircle, Cancel, DeleteSweep } from '@mui/icons-material';
+import { useGame, useGameWrite } from './GameProvider';
 
 
-function NewGame({auth, firestore}) {
+function NewGame({user}) {
    const [showDlg, setShowDlg] = useState(false)
    const [players, setPlayers] = useState([])
    const [newName, setNewName] = useState("")
@@ -13,30 +13,8 @@ function NewGame({auth, firestore}) {
 
 
    const nameInput = React.useRef(null)
-
-   const getActiveGame = async (uid) => {
-      const gamesRef = collection(firestore, `users/${uid}/Games`);
-      const q = query(gamesRef, where("Active", "==", true));
-      const data = await getDocs(q);
-      if (data.empty) return
-      return data.docs[0].id
-   }
-   const readActiveGameData = async () => {
-      const uid = auth?.currentUser?.uid
-      // const uid="user-Id"
-      const game = await getActiveGame(uid)
-      if (game) {
-        const playersRef = collection(firestore, `users/${uid}/Games/${game}/Players`)
-        const data = await getDocs(playersRef)
-        const playersDoc = data.docs.map((doc) => ({ ...doc.data() }))
-        playersDoc.sort((a, b) => a.Order - b.Order)
-        setPlayers(playersDoc.map(p => p.Name))
-        console.log(players)
-        setPlayers(playersDoc.map(p => p.Name))
-        setWinScore(game?.WinScore || 1000)
-        setGlock(game?.Glock || 0)
-      }
-   }
+   const game = useGame()
+   const gameWrite = useGameWrite()
 
    const handleDelete = (idx) => {
       let newList = [...players]
@@ -65,30 +43,29 @@ function NewGame({auth, firestore}) {
    }
 
    const handleStart = async () => {
-      const uid = auth?.currentUser?.uid
-      console.log(uid, auth)
-      const gamesRef = collection(firestore, `users/${uid}/Games`);
-      const q = query(gamesRef, where("Active", "==", true))
-      const data = await getDocs(q)
-      if (!data.empty) {
-         data.docs.forEach(async (activeGame) => {
-            await updateDoc(activeGame, {Active: false})
+      gameWrite(user, {
+         winScore: winScore || 1000,
+         glock: glock,
+         players: players.map((p, i) => {
+            return { name: p, order: i + 1, scores: [] }
          })
-      }
-      const game = await addDoc(gamesRef, { Active: true, StartTime: Timestamp.fromDate(new Date()), WinScore: 1000, Glock: 5 })
-      const playersRef = collection(firestore, `users/${uid}/Games/${game.id}/Players`)
-      players.forEach(async (player, idx) => {
-         await addDoc(playersRef, {Name: player, Order: idx+1, Scores:[] })
       })
       setShowDlg(false)
    }
 
+
+   const readActiveGameData = async () => {
+      if (game?.players?.length) {
+         setPlayers(game.players.map(p => p.name))
+         setWinScore(game.winScore || 1000)
+         setGlock(game.glock || 0)
+      }
+   }
+
+
    return (
       <>
-         <Button startIcon={<PlayArrow />}
-            size='large'
-            sx={{ margin: '4px 6% 16px 6%', color: '#3085d6' }}
-            onClick={() => setShowDlg(true)}>
+         <Button startIcon={<PlayArrow />} size='medium' onClick={() => setShowDlg(true)}>
             New Game
          </Button>
          <Dialog open={showDlg} onClose={()=> setShowDlg(false)} >
@@ -100,6 +77,7 @@ function NewGame({auth, firestore}) {
             </DialogContentText>
             <TextField
                autoFocus ref={nameInput}
+               fullWidth
                margin="dense"
                id="player"
                label="Add Player"
@@ -113,15 +91,15 @@ function NewGame({auth, firestore}) {
                   endAdornment: (
                      <InputAdornment position="end" onClick={handleAdd}>
                         <AddCircle />
+                        <IconButton onClick={clearAll}><DeleteSweep /> </IconButton>
                      </InputAdornment>
                   ),
                   }}
                />
-            <IconButton sx={{marginTop: '20px'}} onClick={clearAll}><ClearAll /> </IconButton>
             <Grid container spacing={1}>
                {players.map((player, idx) => {
                   return (
-                     <Grid item xs={4} lg={2} key={idx}>
+                     <Grid item xs={4} md={3} key={idx}>
                         <Tooltip title={player} >
                            <Chip
                            label={player}
@@ -132,28 +110,32 @@ function NewGame({auth, firestore}) {
                   )}
                )}
             </Grid>
-            <p></p>
-            <TextField
-               margin="dense"
-               id="glock"
-               label="Rounds to glock (double score)"
-               type="number"
-               variant="standard"
-               color='primary'
-               value={glock}
-               onChange={(e) => setGlock(e.target.value)}>
-            </TextField>
-            <p></p>
-            <TextField
-               margin="dense"
-               id="winScore"
-               label="Winning Score"
-               type="number"
-               variant="standard"
-               color='primary'
-               value={winScore}
-               onChange={(e) => setWinScore(e.target.value)}>
-            </TextField>
+            <Grid container spacing={4} sx={{marginTop: '8px'}}>
+               <Grid item xs={8} md={5}>
+                  <TextField
+                     margin="dense"
+                     id="glock"
+                     label="Rounds to glock (double score)"
+                     type="number"
+                     variant="standard"
+                     color='primary'
+                     value={glock}
+                     onChange={(e) => setGlock(e.target.value)}>
+                  </TextField>
+               </Grid>
+               <Grid item xs={8} md={5}>
+                  <TextField
+                     margin="dense"
+                     id="winScore"
+                     label="Winning Score"
+                     type="number"
+                     variant="standard"
+                     color='primary'
+                     value={winScore}
+                     onChange={(e) => setWinScore(e.target.value)}>
+                  </TextField>
+               </Grid>
+            </Grid>
          </DialogContent>
          <DialogActions>
             <Button startIcon={<Cancel />} onClick={()=>setShowDlg(false)}>Cancel</Button>
