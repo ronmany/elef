@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import {
    Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle,
-   FormControlLabel, Stack, TextField
+   FormControlLabel, Stack, TextField, InputAdornment,
+   Tooltip,
+   IconButton
 } from '@mui/material'
-import { Add, Cancel, Save } from '@mui/icons-material';
+import { Add, Cancel, Save, RemoveCircleOutline, AddCircleOutline } from '@mui/icons-material';
 import { useGame, useGameUpdate } from './GameProvider'
 
 
@@ -29,8 +31,15 @@ function AddScore({ user }) {
 
    const handleScoreChange = (e, idx) => {
       const score = Number(e.target.value)
+      if (isNaN(score)) return // ignore non-numeric input
       const newScores = [...scores]
       newScores[idx] = score
+      setScores([...newScores])
+   }
+
+   const toggelNegative = (_, idx) => {
+      const newScores = [...scores]
+      newScores[idx] = -newScores[idx]
       setScores([...newScores])
    }
 
@@ -41,10 +50,12 @@ function AddScore({ user }) {
    }
 
    return (
-   <>
-         <Button startIcon={<Add />} size='medium' onClick={() => setShow(true)}>
-            Add Score
-         </Button>
+      <>
+         <Tooltip title="Add Score">
+            <IconButton color='primary' size='large'  onClick={() => setShow(true)}>
+               <Add />
+            </IconButton>
+         </Tooltip>
          <Dialog open={show} onClose={()=> setShow(false)} >
          <DialogTitle sx={{"&.MuiDialogTitle-root": {color: '#3085d6'} }}>Enter scores</DialogTitle>
             <DialogContent>
@@ -56,10 +67,22 @@ function AddScore({ user }) {
                            margin="dense"
                            id={player.name}
                            label={player.name}
-                           type="number"
+                           type="mumeric"
                            variant="standard"
-                           color='primary'
+                           color='success'
                            value={scores[idx]}
+                           InputProps={{
+                              startAdornment: (
+                                 <InputAdornment position="start" style={{cursor: "pointer"}}>
+                                    <Tooltip title="Toggle negative/positive">
+                                       {scores[idx] < 0 ?
+                                          <AddCircleOutline onClick={(e) => toggelNegative(e, idx)} /> :
+                                          <RemoveCircleOutline onClick={(e) => toggelNegative(e, idx)} />
+                                       }
+                                    </Tooltip>
+                                 </InputAdornment>
+                              )
+                           }}
                            onChange={(e) => handleScoreChange(e, idx)} />
                      )}
                      {glockRound ?

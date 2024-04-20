@@ -65,9 +65,11 @@ function NewGame({user}) {
 
    return (
       <>
-         <Button startIcon={<PlayArrow />} size='medium' onClick={() => setShowDlg(true)}>
-            New Game
-         </Button>
+         <Tooltip title="Start New Game">
+            <IconButton color='primary' size='large' onClick={() => setShowDlg(true)}>
+               <PlayArrow />
+            </IconButton>
+         </Tooltip>
          <Dialog open={showDlg} onClose={()=> setShowDlg(false)} >
          <DialogTitle sx={{"&.MuiDialogTitle-root": {color: '#3085d6'} }}>Start New Game</DialogTitle>
          <DialogContent>
@@ -111,11 +113,11 @@ function NewGame({user}) {
                )}
             </Grid>
             <Grid container spacing={4} sx={{marginTop: '8px'}}>
-               <Grid item xs={8} md={5}>
+               <Grid item xs={12} md={5}>
                   <TextField
                      margin="dense"
                      id="glock"
-                     label="Rounds to glock (double score)"
+                     label='Rounds to double score ("Glock")'
                      type="number"
                      variant="standard"
                      color='primary'
@@ -123,7 +125,7 @@ function NewGame({user}) {
                      onChange={(e) => setGlock(e.target.value)}>
                   </TextField>
                </Grid>
-               <Grid item xs={8} md={5}>
+               <Grid item xs={12} md={5}>
                   <TextField
                      margin="dense"
                      id="winScore"
